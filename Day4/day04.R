@@ -7,7 +7,7 @@ library(tidyverse)
 library(zoo)
 
 ## Read in the data
-df <- data.frame(V1 = read_lines("Desktop/Day4/input_day4.txt"))
+df <- data.frame(V1 = read_lines("Day4/input_day4.txt"))
 
 ## ----------------------------------------------------------------------------
 ## ------------------Part 1------------------------------------------------------

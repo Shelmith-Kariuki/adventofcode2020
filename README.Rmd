@@ -208,6 +208,20 @@ valid_passwords2 <- df2 %>%
 
 ```
 
+## Day 3: Toboggan Trajectory
+
+### Part 1:
+
+```{r}
+## Pending
+```
+
+### Part 2:
+
+```{r}
+## Pending
+```
+
 
 ## Day 4: Passport Processing
 
@@ -483,4 +497,184 @@ valid_passports2 <- df3 %>%
   filter(final_validity == "valid") %>% 
   pull(n)  
 ```
+
+
+## Day 5: Binary Boarding
+
+### Part 1:
+
+You board your plane only to discover a new problem: you dropped your boarding pass! You aren't sure which seat is yours, and all of the flight attendants are busy with the flood of people that suddenly made it through passport control.
+
+You write a quick program to use your phone's camera to scan all of the nearby boarding passes (your puzzle input); perhaps you can find your seat through process of elimination.
+
+Instead of zones or groups, this airline uses binary space partitioning to seat people. A seat might be specified like FBFBBFFRLR, where F means "front", B means "back", L means "left", and R means "right".
+
+The first 7 characters will either be F or B; these specify exactly one of the 128 rows on the plane (numbered 0 through 127). Each letter tells you which half of a region the given seat is in. Start with the whole list of rows; the first letter indicates whether the seat is in the front (0 through 63) or the back (64 through 127). The next letter indicates which half of that region the seat is in, and so on until you're left with exactly one row.
+
+For example, consider just the first seven characters of FBFBBFFRLR:
+
+Start by considering the whole range, rows 0 through 127.
+
+- F means to take the lower half, keeping rows 0 through 63.
+
+- B means to take the upper half, keeping rows 32 through 63.
+
+- F means to take the lower half, keeping rows 32 through 47.
+
+- B means to take the upper half, keeping rows 40 through 47.
+
+- B keeps rows 44 through 47.
+
+- F keeps rows 44 through 45.
+
+The final F keeps the lower of the two, row 44.
+
+The last three characters will be either L or R; these specify exactly one of the 8 columns of seats on the plane (numbered 0 through 7). The same process as above proceeds again, this time with only three steps. L means to keep the lower half, while R means to keep the upper half.
+
+For example, consider just the last 3 characters of FBFBBFFRLR:
+
+Start by considering the whole range, columns 0 through 7.
+
+- R means to take the upper half, keeping columns 4 through 7.
+
+- L means to take the lower half, keeping columns 4 through 5.
+
+- The final R keeps the upper of the two, column 5.
+
+So, decoding FBFBBFFRLR reveals that it is the seat at row 44, column 5.
+
+Every seat also has a unique seat ID: multiply the row by 8, then add the column. In this example, the seat has ID 44 * 8 + 5 = 357.
+
+Here are some other boarding passes:
+
+- BFFFBBFRRR: row 70, column 7, seat ID 567.
+
+- FFFBBBFRRR: row 14, column 7, seat ID 119.
+
+- BBFFBBFRLL: row 102, column 4, seat ID 820.
+
+**As a sanity check, look through your list of boarding passes. What is the highest seat ID on a boarding pass?**
+
+```{r}
+## Read in the data
+df <- data.frame(V1 = read_lines("Day5/input_day5.txt"))
+
+## Ensure that the boarding seat specifications do not have leading or trailig spaces
+df <- df %>% 
+  mutate(V1 = trimws(V1))
+
+## Row number function
+row_function <- function(boarding_pass){
+
+letter_count <- nchar(gsub("R|L", "", boarding_pass))
+
+start = 0
+end = 127
+i = 1
+
+while(i <= 7){
+  
+  letter <- substr(boarding_pass, i, i)
+  
+  div = (end - start)/2
+  first_half_start = start
+  first_half_end = start + div - 0.5
+  second_half_start = end - div + 0.5
+  second_half_end = end
+  
+  if(letter == "F"){
+    min_range = first_half_start
+    max_range = first_half_end
+  }else{
+    if(letter == "B"){
+      min_range = second_half_start
+      max_range = second_half_end  
+    }
+    
+}
+
+  start = min_range
+  end = max_range 
+  i = i + 1
+}
+
+final_row_num = as.integer(start)
+return(final_row_num)
+
+}
+
+## Column number function
+col_function <- function(boarding_pass){
+  
+  letter_count <- nchar(gsub("F|B", "", boarding_pass))
+  
+  start = 0
+  end = 7
+  i = 8
+  while(i >= nchar(boarding_pass) -letter_count +1 & 
+        i <= nchar(boarding_pass)){
+    
+    letter <- substr(boarding_pass, i, i)
+    
+    div = (end - start)/2
+    first_half_start = start
+    first_half_end = start + div - 0.5
+    second_half_start = end - div + 0.5
+    second_half_end = end
+    
+    if(letter == "L"){
+      min_range = first_half_start
+      max_range = first_half_end
+    }else{
+      if(letter == "R"){
+        min_range = second_half_start
+        max_range = second_half_end  
+      }
+    }
+    
+    start = min_range
+    end = max_range 
+    i = i + 1
+  }
+  
+  final_col_num = as.integer(start)
+  return(final_col_num)
+  
+}
+
+## Generate variables that contain the row number and column number
+df$row_num <- map_int(df$V1, row_function)
+df$col_num <- map_int(df$V1, col_function)
+
+# Generate a variable that shows the seatID
+
+df <- df %>% 
+  mutate(seatid = row_num * 8 + col_num)
+
+## Generate the answer (maximum row id) 
+answer = max(df$seatid)
+
+```
+
+### Part 2:
+
+Ding! The "fasten seat belt" signs have turned on. Time to find your seat.
+
+It's a completely full flight, so your seat should be the only missing boarding pass in your list. However, there's a catch: some of the seats at the very front and back of the plane don't exist on this aircraft, so they'll be missing from your list as well.
+
+Your seat wasn't at the very front or back, though; the seats with IDs +1 and -1 from yours will be in your list.
+
+**What is the ID of your seat?**
+
+```{r}
+
+union_seq = seq(min(df$seatid), max(df$seatid), 1)
+
+answer2 = union_seq[which(!union_seq %in% df$seatid)]
+
+```
+
+
+
+
 
