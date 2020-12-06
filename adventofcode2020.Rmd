@@ -674,5 +674,167 @@ answer2 = union_seq[which(!union_seq %in% df$seatid)]
 ```
 
 
+## Day 6: Custom Customs
 
+### Part 1:
+
+As your flight approaches the regional airport where you'll switch to a much larger plane, customs declaration forms are distributed to the passengers.
+
+The form asks a series of 26 yes-or-no questions marked a through z. All you need to do is identify the questions for which anyone in your group answers "yes". Since your group is just you, this doesn't take very long.
+
+However, the person sitting next to you seems to be experiencing a language barrier and asks if you can help. For each of the people in their group, you write down the questions for which they answer "yes", one per line. For example:
+
+- abcx
+- abcy
+- abcz
+
+In this group, there are 6 questions to which anyone answered "yes": a, b, c, x, y, and z. (Duplicate answers to the same question don't count extra; each question counts at most once.)
+
+Another group asks for your help, then another, and eventually you've collected answers from every group on the plane (your puzzle input). Each group's answers are separated by a blank line, and within each group, each person's answers are on a single line. For example:
+
+ abc\
+
+ a\
+
+ b\
+
+ c\
+
+
+ ab\
+
+ ac\
+
+
+ a\
+
+ a\
+
+ a\
+
+ a\
+
+
+b\
+
+This list represents answers from five groups:
+
+- The first group contains one person who answered "yes" to 3 questions: a, b, and c.
+
+- The second group contains three people; combined, they answered "yes" to 3 questions: a, b, and c.
+
+- The third group contains two people; combined, they answered "yes" to 3 questions: a, b, and c.
+
+- The fourth group contains four people; combined, they answered "yes" to only 1 question, a.
+
+- The last group contains one person who answered "yes" to only 1 question, b.
+
+- In this example, the sum of these counts is 3 + 3 + 3 + 1 + 1 = 11.
+
+**For each group, count the number of questions to which anyone answered "yes". What is the sum of those counts?**
+
+```{r}
+## Read in the data
+df <- data.frame(questions = read_lines("Day6/input_day6.txt"))
+
+## Generate a variable that shows the groupid and another one that shows the person_id
+df2 <- df %>% 
+  mutate(blank = ifelse(questions == "", "group", NA)) %>% 
+  mutate(counter = seq_along(blank),
+         groupid = ifelse(blank == "group", paste0(blank, counter),NA),
+         groupid = na.locf0(groupid, fromLast = TRUE)) %>% 
+  group_by(groupid) %>% 
+  filter(blank != "group" |is.na(blank)) %>% 
+  select(-blank, -counter) %>% 
+  mutate(personid = seq_along(groupid)) %>% 
+  select(groupid, personid, questions)
+
+## Generate an object that shows the maximum possible `yes` answers
+max_characterlength = max(nchar(trimws(str_squish(df2$questions))))
+
+## Separate the questions into different variables and 
+## reshape the data so that all the qs are in one variable
+df2 <- df2 %>% 
+  group_by(groupid) %>% 
+  mutate(questions = trimws(str_squish(questions))) %>% 
+  separate(questions, into = paste0("q_", 1:35), sep = "")%>% 
+  pivot_longer(cols = contains("q_"), values_drop_na = TRUE) %>% 
+  filter(value!="") %>% 
+  mutate(value = trimws(str_squish(value))) %>% 
+  ungroup() 
+
+## Count the number of questions to which anyone answered "yes" in each group and
+## generate the sum of these counts
+answer_1 <- df2 %>% 
+  group_by(groupid) %>% 
+  summarise(n_unique_qs = length(unique(value))) %>% 
+  ungroup() %>% 
+  summarise(summation = sum(n_unique_qs)) %>% 
+  pull(summation)
+
+```
+
+### Part 2: 
+
+As you finish the last group's customs declaration, you notice that you misread one word in the instructions:
+
+You don't need to identify the questions to which anyone answered "yes"; you need to identify the questions to which everyone answered "yes"!
+
+Using the same example as above:
+
+abc
+
+a
+
+b
+
+c
+
+ab
+
+ac
+
+a
+
+a
+
+a
+
+a
+
+b
+
+This list represents answers from five groups:
+
+- In the first group, everyone (all 1 person) answered "yes" to 3 questions: a, b, and c.
+
+- In the second group, there is no question to which everyone answered "yes".
+
+- In the third group, everyone answered yes to only 1 question, a. Since some people did not answer "yes" to b or c, they don't count.
+
+- In the fourth group, everyone answered yes to only 1 question, a.
+
+- In the fifth group, everyone (all 1 person) answered "yes" to 1 question, b.
+
+- In this example, the sum of these counts is 3 + 0 + 1 + 1 + 1 = 6.
+
+**For each group, count the number of questions to which everyone answered "yes". What is the sum of those counts?**
+
+```{r}
+tab2 <- df2 %>% 
+  group_by(groupid) %>% 
+  mutate(n_persons = length(unique(personid))) %>% 
+  ungroup() %>% 
+  group_by(groupid, value) %>% 
+  mutate(n_qs = length(value)) %>% 
+  mutate(all_yes = ifelse(n_qs == n_persons, 1, 0)) %>% 
+  distinct(groupid, value, all_yes) %>% 
+  group_by(groupid) %>% 
+  summarise(n_unique_qs = sum(all_yes, na.rm = T)) %>% 
+  ungroup()
+  
+answer_2 <- tab2 %>% 
+  summarise(summation = sum(n_unique_qs, na.rm = T)) %>% 
+  pull(summation)
+```
 

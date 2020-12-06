@@ -443,13 +443,21 @@ summary {
 <li><a href="#part-1-1">Part 1:</a></li>
 <li><a href="#part-2-1">Part 2:</a></li>
 </ul></li>
-<li><a href="#day-4-passport-processing">Day 4: Passport Processing</a><ul>
+<li><a href="#day-3-toboggan-trajectory">Day 3: Toboggan Trajectory</a><ul>
 <li><a href="#part-1-2">Part 1:</a></li>
 <li><a href="#part-2-2">Part 2:</a></li>
 </ul></li>
-<li><a href="#day-5-binary-boarding">Day 5: Binary Boarding</a><ul>
+<li><a href="#day-4-passport-processing">Day 4: Passport Processing</a><ul>
 <li><a href="#part-1-3">Part 1:</a></li>
 <li><a href="#part-2-3">Part 2:</a></li>
+</ul></li>
+<li><a href="#day-5-binary-boarding">Day 5: Binary Boarding</a><ul>
+<li><a href="#part-1-4">Part 1:</a></li>
+<li><a href="#part-2-4">Part 2:</a></li>
+</ul></li>
+<li><a href="#day-6-custom-customs">Day 6: Custom Customs</a><ul>
+<li><a href="#part-1-5">Part 1:</a></li>
+<li><a href="#part-2-5">Part 2:</a></li>
 </ul></li>
 </ul>
 </div>
@@ -586,9 +594,20 @@ valid_passwords2 &lt;- df2 %&gt;%
   pull(n)</code></pre>
 </div>
 </div>
+<div id="day-3-toboggan-trajectory" class="section level2">
+<h2>Day 3: Toboggan Trajectory</h2>
+<div id="part-1-2" class="section level3">
+<h3>Part 1:</h3>
+<pre class="r"><code>## Pending</code></pre>
+</div>
+<div id="part-2-2" class="section level3">
+<h3>Part 2:</h3>
+<pre class="r"><code>## Pending</code></pre>
+</div>
+</div>
 <div id="day-4-passport-processing" class="section level2">
 <h2>Day 4: Passport Processing</h2>
-<div id="part-1-2" class="section level3">
+<div id="part-1-3" class="section level3">
 <h3>Part 1:</h3>
 <p>You arrive at the airport only to realize that you grabbed your North Pole Credentials instead of your passport. While these documents are extremely similar, North Pole Credentials aren’t issued by a country and therefore aren’t actually valid documentation for travel in most of the world.</p>
 <p>It seems like you’re not the only one having problems, though; a very long line has formed for the automatic passport scanners, and the delay could upset your travel itinerary.</p>
@@ -667,7 +686,7 @@ valid_passports1 &lt;- df2 %&gt;%
   filter(validity == &quot;valid&quot;) %&gt;% 
   pull(n)</code></pre>
 </div>
-<div id="part-2-2" class="section level3">
+<div id="part-2-3" class="section level3">
 <h3>Part 2:</h3>
 <p>The line is moving more quickly now, but you overhear airport security talking about how passports with invalid data are getting through. Better add some data validation, quick!</p>
 <p>You can continue to ignore the cid field, but each other field has strict rules about what values are valid for automatic validation:</p>
@@ -779,7 +798,7 @@ valid_passports2 &lt;- df3 %&gt;%
 </div>
 <div id="day-5-binary-boarding" class="section level2">
 <h2>Day 5: Binary Boarding</h2>
-<div id="part-1-3" class="section level3">
+<div id="part-1-4" class="section level3">
 <h3>Part 1:</h3>
 <p>You board your plane only to discover a new problem: you dropped your boarding pass! You aren’t sure which seat is yours, and all of the flight attendants are busy with the flood of people that suddenly made it through passport control.</p>
 <p>You write a quick program to use your phone’s camera to scan all of the nearby boarding passes (your puzzle input); perhaps you can find your seat through process of elimination.</p>
@@ -911,7 +930,7 @@ df &lt;- df %&gt;%
 ## Generate the answer (maximum row id) 
 answer = max(df$seatid)</code></pre>
 </div>
-<div id="part-2-3" class="section level3">
+<div id="part-2-4" class="section level3">
 <h3>Part 2:</h3>
 <p>Ding! The “fasten seat belt” signs have turned on. Time to find your seat.</p>
 <p>It’s a completely full flight, so your seat should be the only missing boarding pass in your list. However, there’s a catch: some of the seats at the very front and back of the plane don’t exist on this aircraft, so they’ll be missing from your list as well.</p>
@@ -920,6 +939,133 @@ answer = max(df$seatid)</code></pre>
 <pre class="r"><code>union_seq = seq(min(df$seatid), max(df$seatid), 1)
 
 answer2 = union_seq[which(!union_seq %in% df$seatid)]</code></pre>
+</div>
+</div>
+<div id="day-6-custom-customs" class="section level2">
+<h2>Day 6: Custom Customs</h2>
+<div id="part-1-5" class="section level3">
+<h3>Part 1:</h3>
+<p>As your flight approaches the regional airport where you’ll switch to a much larger plane, customs declaration forms are distributed to the passengers.</p>
+<p>The form asks a series of 26 yes-or-no questions marked a through z. All you need to do is identify the questions for which anyone in your group answers “yes”. Since your group is just you, this doesn’t take very long.</p>
+<p>However, the person sitting next to you seems to be experiencing a language barrier and asks if you can help. For each of the people in their group, you write down the questions for which they answer “yes”, one per line. For example:</p>
+<ul>
+<li>abcx</li>
+<li>abcy</li>
+<li>abcz</li>
+</ul>
+<p>In this group, there are 6 questions to which anyone answered “yes”: a, b, c, x, y, and z. (Duplicate answers to the same question don’t count extra; each question counts at most once.)</p>
+<p>Another group asks for your help, then another, and eventually you’ve collected answers from every group on the plane (your puzzle input). Each group’s answers are separated by a blank line, and within each group, each person’s answers are on a single line. For example:</p>
+<p>abc<br />
+</p>
+<p>a<br />
+</p>
+<p>b<br />
+</p>
+<p>c<br />
+</p>
+<p>ab<br />
+</p>
+<p>ac<br />
+</p>
+<p>a<br />
+</p>
+<p>a<br />
+</p>
+<p>a<br />
+</p>
+<p>a<br />
+</p>
+<p>b<br />
+</p>
+<p>This list represents answers from five groups:</p>
+<ul>
+<li><p>The first group contains one person who answered “yes” to 3 questions: a, b, and c.</p></li>
+<li><p>The second group contains three people; combined, they answered “yes” to 3 questions: a, b, and c.</p></li>
+<li><p>The third group contains two people; combined, they answered “yes” to 3 questions: a, b, and c.</p></li>
+<li><p>The fourth group contains four people; combined, they answered “yes” to only 1 question, a.</p></li>
+<li><p>The last group contains one person who answered “yes” to only 1 question, b.</p></li>
+<li><p>In this example, the sum of these counts is 3 + 3 + 3 + 1 + 1 = 11.</p></li>
+</ul>
+<p><strong>For each group, count the number of questions to which anyone answered “yes”. What is the sum of those counts?</strong></p>
+<pre class="r"><code>## Read in the data
+df &lt;- data.frame(questions = read_lines(&quot;Day6/input_day6.txt&quot;))
+
+## Generate a variable that shows the groupid and another one that shows the person_id
+df2 &lt;- df %&gt;% 
+  mutate(blank = ifelse(questions == &quot;&quot;, &quot;group&quot;, NA)) %&gt;% 
+  mutate(counter = seq_along(blank),
+         groupid = ifelse(blank == &quot;group&quot;, paste0(blank, counter),NA),
+         groupid = na.locf0(groupid, fromLast = TRUE)) %&gt;% 
+  group_by(groupid) %&gt;% 
+  filter(blank != &quot;group&quot; |is.na(blank)) %&gt;% 
+  select(-blank, -counter) %&gt;% 
+  mutate(personid = seq_along(groupid)) %&gt;% 
+  select(groupid, personid, questions)
+
+## Generate an object that shows the maximum possible `yes` answers
+max_characterlength = max(nchar(trimws(str_squish(df2$questions))))
+
+## Separate the questions into different variables and 
+## reshape the data so that all the qs are in one variable
+df2 &lt;- df2 %&gt;% 
+  group_by(groupid) %&gt;% 
+  mutate(questions = trimws(str_squish(questions))) %&gt;% 
+  separate(questions, into = paste0(&quot;q_&quot;, 1:35), sep = &quot;&quot;)%&gt;% 
+  pivot_longer(cols = contains(&quot;q_&quot;), values_drop_na = TRUE) %&gt;% 
+  filter(value!=&quot;&quot;) %&gt;% 
+  mutate(value = trimws(str_squish(value))) %&gt;% 
+  ungroup() 
+
+## Count the number of questions to which anyone answered &quot;yes&quot; in each group and
+## generate the sum of these counts
+answer_1 &lt;- df2 %&gt;% 
+  group_by(groupid) %&gt;% 
+  summarise(n_unique_qs = length(unique(value))) %&gt;% 
+  ungroup() %&gt;% 
+  summarise(summation = sum(n_unique_qs)) %&gt;% 
+  pull(summation)</code></pre>
+</div>
+<div id="part-2-5" class="section level3">
+<h3>Part 2:</h3>
+<p>As you finish the last group’s customs declaration, you notice that you misread one word in the instructions:</p>
+<p>You don’t need to identify the questions to which anyone answered “yes”; you need to identify the questions to which everyone answered “yes”!</p>
+<p>Using the same example as above:</p>
+<p>abc</p>
+<p>a</p>
+<p>b</p>
+<p>c</p>
+<p>ab</p>
+<p>ac</p>
+<p>a</p>
+<p>a</p>
+<p>a</p>
+<p>a</p>
+<p>b</p>
+<p>This list represents answers from five groups:</p>
+<ul>
+<li><p>In the first group, everyone (all 1 person) answered “yes” to 3 questions: a, b, and c.</p></li>
+<li><p>In the second group, there is no question to which everyone answered “yes”.</p></li>
+<li><p>In the third group, everyone answered yes to only 1 question, a. Since some people did not answer “yes” to b or c, they don’t count.</p></li>
+<li><p>In the fourth group, everyone answered yes to only 1 question, a.</p></li>
+<li><p>In the fifth group, everyone (all 1 person) answered “yes” to 1 question, b.</p></li>
+<li><p>In this example, the sum of these counts is 3 + 0 + 1 + 1 + 1 = 6.</p></li>
+</ul>
+<p><strong>For each group, count the number of questions to which everyone answered “yes”. What is the sum of those counts?</strong></p>
+<pre class="r"><code>tab2 &lt;- df2 %&gt;% 
+  group_by(groupid) %&gt;% 
+  mutate(n_persons = length(unique(personid))) %&gt;% 
+  ungroup() %&gt;% 
+  group_by(groupid, value) %&gt;% 
+  mutate(n_qs = length(value)) %&gt;% 
+  mutate(all_yes = ifelse(n_qs == n_persons, 1, 0)) %&gt;% 
+  distinct(groupid, value, all_yes) %&gt;% 
+  group_by(groupid) %&gt;% 
+  summarise(n_unique_qs = sum(all_yes, na.rm = T)) %&gt;% 
+  ungroup()
+  
+answer_2 &lt;- tab2 %&gt;% 
+  summarise(summation = sum(n_unique_qs, na.rm = T)) %&gt;% 
+  pull(summation)</code></pre>
 </div>
 </div>
 
