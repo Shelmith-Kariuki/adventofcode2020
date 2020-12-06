@@ -47,6 +47,7 @@ answer_1 <- df2 %>%
   summarise(summation = sum(n_unique_qs)) %>% 
   pull(summation)
 
+## Complete: answer is 7027
 
 ## ----------------------------------------------------------------------------
 ## ------------------Part 2------------------------------------------------------
@@ -70,3 +71,5 @@ tab2 <- df2 %>%
 answer_2 <- tab2 %>% 
   summarise(summation = sum(n_unique_qs, na.rm = T)) %>% 
   pull(summation)
+
+## Shouldn't the answer be 3574?
