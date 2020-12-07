@@ -459,6 +459,10 @@ summary {
 <li><a href="#part-1-5">Part 1:</a></li>
 <li><a href="#part-2-5">Part 2:</a></li>
 </ul></li>
+<li><a href="#day-7-handy-haversacks">Day 7: Handy Haversacks</a><ul>
+<li><a href="#part-1-6">Part 1:</a></li>
+<li><a href="#part-2-6">Part 2:</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -1066,6 +1070,130 @@ answer_1 &lt;- df2 %&gt;%
 answer_2 &lt;- tab2 %&gt;% 
   summarise(summation = sum(n_unique_qs, na.rm = T)) %&gt;% 
   pull(summation)</code></pre>
+</div>
+</div>
+<div id="day-7-handy-haversacks" class="section level2">
+<h2>Day 7: Handy Haversacks</h2>
+<div id="part-1-6" class="section level3">
+<h3>Part 1:</h3>
+<p>You land at the regional airport in time for your next flight. In fact, it looks like you’ll even have time to grab some food: all flights are currently delayed due to issues in luggage processing.</p>
+<p>Due to recent aviation regulations, many rules (your puzzle input) are being enforced about bags and their contents; bags must be color-coded and must contain specific quantities of other color-coded bags. Apparently, nobody responsible for these regulations considered how long they would take to enforce!</p>
+<p>For example, consider the following rules:</p>
+<ul>
+<li><p>light red bags contain 1 bright white bag, 2 muted yellow bags.</p></li>
+<li><p>dark orange bags contain 3 bright white bags, 4 muted yellow bags.</p></li>
+<li><p>bright white bags contain 1 shiny gold bag.</p></li>
+<li><p>muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.</p></li>
+<li><p>shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.</p></li>
+<li><p>dark olive bags contain 3 faded blue bags, 4 dotted black bags.</p></li>
+<li><p>vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.</p></li>
+<li><p>faded blue bags contain no other bags.</p></li>
+<li><p>dotted black bags contain no other bags.</p></li>
+</ul>
+<p>These rules specify the required contents for 9 bag types. In this example, every faded blue bag is empty, every vibrant plum bag contains 11 bags (5 faded blue and 6 dotted black), and so on.</p>
+<p>You have a shiny gold bag. If you wanted to carry it in at least one other bag, how many different bag colors would be valid for the outermost bag? (In other words: how many colors can, eventually, contain at least one shiny gold bag?)</p>
+<p>In the above rules, the following options would be available to you:</p>
+<ul>
+<li><p>A bright white bag, which can hold your shiny gold bag directly.</p></li>
+<li><p>A muted yellow bag, which can hold your shiny gold bag directly, plus some other bags.</p></li>
+<li><p>A dark orange bag, which can hold bright white and muted yellow bags, either of which could then hold your shiny gold bag.</p></li>
+<li><p>A light red bag, which can hold bright white and muted yellow bags, either of which could then hold your shiny gold bag.</p></li>
+</ul>
+<p>So, in this example, the number of bag colors that can eventually contain at least one shiny gold bag is 4.</p>
+<p><strong>How many bag colors can eventually contain at least one shiny gold bag? (The list of rules is quite long; make sure you get all of it.)</strong></p>
+<pre class="r"><code>## Read in the data
+df &lt;- data.frame(rules = read_lines(&quot;Day7/input_day7.txt&quot;))
+
+## Ensure that we do not have blank rows and Split the `rules` into `outer_bag` and `contents` 
+df2 &lt;- df %&gt;% 
+        filter(rules != &quot;&quot;) %&gt;% 
+        separate(rules, into = c(&quot;outer_bag&quot;, &quot;contents&quot;), sep = &quot;contain&quot;) 
+
+
+## Count the number of times the word &quot;bags&quot; is mentioned per row. This will help us know the
+## maximum number of bags in each row
+df2$no_bags = apply(df2[,-1,drop=F], 1, function(x) 
+                sum(str_count(x, &quot;bag&quot;)))
+
+max_no_bags = max(df2$no_bags, na.rm = TRUE)
+
+## Separate the contents into different variables and reshape to long format
+df2 &lt;-  df2 %&gt;%  
+        select(-no_bags) %&gt;% 
+        separate(contents, into = paste0(&quot;bag_&quot;, c(1:max_no_bags+3)), sep = &quot;,&quot;) %&gt;% 
+        pivot_longer(cols = contains(&quot;bag_&quot;),
+                    names_to = &quot;bags_serialno&quot;,
+                    values_to = &quot;contents&quot;,
+                    values_drop_na = TRUE)
+
+## Drop &quot;bag_&quot; from bags_serialno and &quot;bags&quot; from contents and `outer_bag`
+df2 &lt;- df2 %&gt;% 
+  mutate(across(c(&quot;bags_serialno&quot;, &quot;contents&quot;, &quot;outer_bag&quot;), 
+                ~gsub(&quot;bag_|bags|bag|\\.&quot;, &quot;&quot;, .)))
+
+## Generate no_of_bags from `contents`.
+df2 &lt;- df2 %&gt;% 
+  mutate(no_of_bags = str_extract(contents, &quot;[0-9]&quot;),
+         no_of_bags = ifelse(is.na(no_of_bags), 0, no_of_bags)) %&gt;% 
+  mutate(contents = gsub(&quot;[0-9]&quot;, &quot;&quot;, contents))
+
+## Ensure that the numeric variables are actually numeric and the character variables do 
+## not have leading, trailing or white spaces.
+df2 &lt;- df2 %&gt;% 
+  mutate(across(c(&quot;bags_serialno&quot;, &quot;no_of_bags&quot;), ~as.numeric(trimws(str_squish(.)))),
+         across(c(&quot;outer_bag&quot;, &quot;contents&quot;), ~trimws(str_squish(.))))
+
+
+## Generate the bag colors that contain at least one shiny gold bag
+outer_bags = df2 %&gt;% 
+  filter(contents == &quot;shiny gold&quot;) %&gt;%
+  distinct(outer_bag) %&gt;% 
+  pull()
+
+## Loop over the bag colors to get a vector of all possible bag colors that can contain
+## a shiny gold bag
+i &lt;- 1
+while(i &lt;= 594){
+  
+  all_possible_bags &lt;- df2 %&gt;% 
+                        filter(contents == outer_bags[i]) %&gt;%
+                        distinct(outer_bag)%&gt;% 
+                        pull()
+  
+  outer_bags &lt;- c(outer_bags, all_possible_bags)
+  
+  i = i + 1
+}
+
+
+## Count the number of unique bag colors that can eventually contain at least one shiny gold bag
+answer_1 = unique(outer_bags)</code></pre>
+</div>
+<div id="part-2-6" class="section level3">
+<h3>Part 2:</h3>
+<p>It’s getting pretty expensive to fly these days - not because of ticket prices, but because of the ridiculous number of bags you need to buy!</p>
+<p>Consider again your shiny gold bag and the rules from the above example:</p>
+<ul>
+<li><p>faded blue bags contain 0 other bags.</p></li>
+<li><p>dotted black bags contain 0 other bags.</p></li>
+<li><p>vibrant plum bags contain 11 other bags: 5 faded blue bags and 6 dotted black bags.</p></li>
+<li><p>dark olive bags contain 7 other bags: 3 faded blue bags and 4 dotted black bags.</p></li>
+<li><p>So, a single shiny gold bag must contain 1 dark olive bag (and the 7 bags within it) plus 2 - vibrant plum bags (and the 11 bags within each of those): 1 + 1<em>7 + 2 + 2</em>11 = 32 bags!</p></li>
+</ul>
+<p>Of course, the actual rules have a small chance of going several levels deeper than this example; be sure to count all of the bags, even if the nesting becomes topologically impractical!</p>
+<p>Here’s another example:</p>
+<ul>
+<li><p>shiny gold bags contain 2 dark red bags.</p></li>
+<li><p>dark red bags contain 2 dark orange bags.</p></li>
+<li><p>dark orange bags contain 2 dark yellow bags.</p></li>
+<li><p>dark yellow bags contain 2 dark green bags.</p></li>
+<li><p>dark green bags contain 2 dark blue bags.</p></li>
+<li><p>dark blue bags contain 2 dark violet bags.</p></li>
+<li><p>dark violet bags contain no other bags.</p></li>
+</ul>
+<p>In this example, a single shiny gold bag must contain 126 other bags.</p>
+<p><strong>How many individual bags are required inside your single shiny gold bag</strong></p>
+<pre class="r"><code>## Pending</code></pre>
 </div>
 </div>
 
